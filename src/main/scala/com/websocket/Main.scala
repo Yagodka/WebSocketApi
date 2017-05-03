@@ -1,7 +1,7 @@
 package com.websocket
 
 import com.websocket.http.RestApi
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.websocket.util.Implicits._
 
 import scala.io.StdIn
 

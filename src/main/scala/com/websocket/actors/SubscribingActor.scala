@@ -1,5 +1,7 @@
 package com.websocket.actors
 
+import java.util.logging.Logger
+
 import akka.actor.{Actor, ActorRef}
 import akka.pattern.pipe
 import com.websocket.actors.SubscribingActor.{SubscribedTable, Tables}
@@ -11,12 +13,6 @@ import scala.concurrent.Future
 import com.websocket.util.Implicits._
 
 sealed trait SubscriptionProto
-
-sealed trait SubscriptionEvent
-
-sealed trait UpdateEvent extends SubscriptionEvent
-
-sealed trait RemoveEvent extends SubscriptionEvent
 
 @key("subscribe_tables")
 case class GetSubscribeTables() extends SubscriptionProto
@@ -31,25 +27,25 @@ case class SubscribesTablesList(tables: Seq[SubscribedTable]) extends Subscripti
 final case class AddTable(@key("after_id") afterId: Int, table: SubscribedTable) extends SubscriptionProto
 
 @key("table_added")
-final case class AddedTable(@key("after_id") afterId: Int, table: SubscribedTable) extends SubscriptionEvent
+final case class AddedTable(@key("after_id") afterId: Int, table: SubscribedTable) extends SubscriptionProto
 
 @key("update_table")
 final case class UpdateTable(table: SubscribedTable) extends SubscriptionProto
 
 @key("table_updated")
-final case class TableUpdated(table: SubscribedTable) extends SubscriptionProto with UpdateEvent
+final case class TableUpdated(table: SubscribedTable) extends SubscriptionProto
 
 @key("update_failed")
-final case class UpdateFailed(id: Int) extends SubscriptionProto with UpdateEvent
+final case class UpdateFailed(id: Int) extends SubscriptionProto
 
 @key("remove_table")
 final case class RemoveTable(id: Int) extends SubscriptionProto
 
 @key("removal_failed")
-final case class RemovalFailed(id: Int) extends SubscriptionProto with RemoveEvent
+final case class RemovalFailed(id: Int) extends SubscriptionProto
 
 @key("table_removed")
-final case class TableRemoved(id: Int) extends SubscriptionProto with RemoveEvent
+final case class TableRemoved(id: Int) extends SubscriptionProto
 
 object SubscribingActor {
 
@@ -81,7 +77,7 @@ class SubscribingActor(eventsActor: ActorRef) extends Actor with Config {
     case _ =>
   }
 
-  def pipeEvent(event: Future[SubscriptionEvent]) = {
+  def pipeEvent(event: Future[SubscriptionProto]) = {
     event pipeTo eventsActor
     event pipeTo sender()
   }

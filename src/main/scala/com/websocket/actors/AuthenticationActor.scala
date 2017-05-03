@@ -46,13 +46,17 @@ class AuthenticationActor extends Actor with Config {
   lazy val users = TableQuery[Users]
 
   def receive = {
-    case GetLoginType(u, _) => loginByName(u).pipeTo(sender())
+    case GetLoginType(n, p) => loginByName(n, p).pipeTo(sender())
     case HasAdminPermissions(u, p) => hasAdminPermissions(u, p).pipeTo(sender())
     case other => unhandled(other)
   }
 
-  def loginByName(name: String): Future[AuthProto] = database.run {
-    val userType = users.filter(_.name === name).map(_.userType).result.headOption
+  def loginByName(name: String, psw: String): Future[AuthProto] = database.run {
+    val userType = users.filter(u =>
+      u.name === name &&
+        u.password === psw)
+      .map(_.userType).result.headOption
+
     userType map {
       case Some(t) => LoginType(t)
       case None => LoginFailed

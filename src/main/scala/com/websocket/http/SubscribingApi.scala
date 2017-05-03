@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.pattern.ask
-import com.websocket.actors._
+import com.websocket.actors.{SubscriptionProto, _}
 import com.websocket.util.UpickleSupport._
 import com.websocket.util.Implicits._
 
@@ -61,19 +61,21 @@ trait SubscribingApi {
       } ~
         put {
           entity(as[UpdateTable]) { req =>
-            onComplete((subscribeActor ? req).mapTo[UpdateEvent]) {
+            onComplete((subscribeActor ? req).mapTo[SubscriptionProto]) {
               case Success(resp @ TableUpdated(_)) => complete(StatusCodes.OK, resp)
               case Success(resp @ UpdateFailed(_)) => complete(StatusCodes.NotFound, resp)
               case Failure(e) => complete(StatusCodes.InternalServerError, e.getMessage)
+              case _ => complete(StatusCodes.InternalServerError, "Something went wrong")
             }
           }
         } ~
         delete {
           entity(as[RemoveTable]) { req =>
-            onComplete((subscribeActor ? req).mapTo[RemoveEvent]) {
+            onComplete((subscribeActor ? req).mapTo[SubscriptionProto]) {
               case Success(resp @ TableRemoved(_)) => complete(StatusCodes.OK, resp)
               case Success(resp @ RemovalFailed(_)) => complete(StatusCodes.NotFound, resp)
               case Failure(e) => complete(StatusCodes.InternalServerError, e.getMessage)
+              case _ => complete(StatusCodes.InternalServerError, "Something went wrong")
             }
           }
         }
