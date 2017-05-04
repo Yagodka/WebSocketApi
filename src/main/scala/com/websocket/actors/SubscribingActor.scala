@@ -1,7 +1,5 @@
 package com.websocket.actors
 
-import java.util.logging.Logger
-
 import akka.actor.{Actor, ActorRef}
 import akka.pattern.pipe
 import com.websocket.actors.SubscribingActor.{SubscribedTable, Tables}
@@ -15,10 +13,10 @@ import com.websocket.util.Implicits._
 sealed trait SubscriptionProto
 
 @key("subscribe_tables")
-case class GetSubscribeTables() extends SubscriptionProto
+case object GetSubscribeTables extends SubscriptionProto
 
 @key("unsubscribe_tables")
-case class UnsubscribeTables() extends SubscriptionProto
+case object UnsubscribeTables extends SubscriptionProto
 
 @key("table_list")
 case class SubscribesTablesList(tables: Seq[SubscribedTable]) extends SubscriptionProto
@@ -69,8 +67,8 @@ class SubscribingActor(eventsActor: ActorRef) extends Actor with Config {
   lazy val tables = TableQuery[Tables]
 
   def receive = {
-    case GetSubscribeTables() => getSubscribeTables.pipeTo(sender())
-    case UnsubscribeTables() => unsubscribe
+    case GetSubscribeTables => getSubscribeTables.pipeTo(sender())
+    case UnsubscribeTables => unsubscribe
     case AddTable(afterId, SubscribedTable(_, n, px)) => pipeEvent(addTable(afterId, n, px))
     case UpdateTable(table) => pipeEvent(updateTable(table))
     case RemoveTable(id) => pipeEvent(removeTable(id))
@@ -82,6 +80,7 @@ class SubscribingActor(eventsActor: ActorRef) extends Actor with Config {
     event pipeTo sender()
   }
 
+  // todo Maybe this is a very simple option, but is it more difficult?
   def addTable(afterId: Int, name: String, participants: Int) = {
     val insertQuery = tables returning tables.map(_.id) into ((item, id) => item.copy(id = id))
     val action = insertQuery += SubscribedTable(0, name, participants)

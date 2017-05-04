@@ -16,9 +16,9 @@ trait AuthenticationApi {
   val loginRoute: Route =
     path("login") {
       post {
-        entity(as[GetLoginType]) { case req @ GetLoginType(_, _) =>
-          onSuccess((authActor ? req).mapTo[AuthProto]) { resp =>
-            complete(resp)
+        entity(as[GetLoginType]) { req =>
+          onSuccess((authActor ? req).mapTo[AuthProto]) {
+            complete(_)
           }
         }
       }

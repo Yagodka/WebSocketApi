@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.pattern.ask
-import com.websocket.actors.{SubscriptionProto, _}
+import com.websocket.actors._
 import com.websocket.util.UpickleSupport._
 import com.websocket.util.Implicits._
 
@@ -25,7 +25,7 @@ trait SubscribingApi {
       basicCredentials = credentials.asInstanceOf[BasicHttpCredentials]
     } yield HasAdminPermissions(basicCredentials.username, basicCredentials.password)
 
-  implicit def rejectionHandler = RejectionHandler.newBuilder().handle {
+  implicit def rejectionHandler: RejectionHandler = RejectionHandler.newBuilder().handle {
     case AuthorizationFailedRejection => complete(UserNotAuthorized)
       }.result()
 
@@ -40,11 +40,11 @@ trait SubscribingApi {
       post {
         extractRequest { request =>
           authorizeAsync(_ => hasAdminPermissions(request)) {
-            entity(as[GetSubscribeTables]) { req =>
+            entity(as[GetSubscribeTables.type]) { req =>
               onSuccess((subscribeActor ? req).mapTo[SubscribesTablesList]) { resp =>
                 complete(resp)
               }
-            } ~ entity(as[UnsubscribeTables]) { req =>
+            } ~ entity(as[UnsubscribeTables.type]) { req =>
               subscribeActor ! req
               complete(StatusCodes.NoContent)
             }

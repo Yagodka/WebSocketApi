@@ -1,6 +1,5 @@
 package com.websocket.http
 
-
 import akka.actor.{ActorRef, Props}
 import akka.http.scaladsl.Http
 import com.websocket.actors.{AuthenticationActor, EventsActor, SubscribingActor}

@@ -12,30 +12,30 @@ class SubscribingTest extends BaseRestTest {
   val wrongCredentials_2 = BasicHttpCredentials("user1234", "wrong2345")
 
   "At the SubscribeTables request" should "answer with subscribed tables" in {
-    Post("/subscribing/admin", GetSubscribeTables()) ~> addCredentials(validCredentials) ~> routes ~> check {
+    Post("/subscribing/admin", GetSubscribeTables) ~> addCredentials(validCredentials) ~> routes ~> check {
       val response = responseAs[SubscribesTablesList]
       response.tables should have size 2
       response.tables.head shouldBe SubscribedTable(1, "table - James Bond", 7)
     }
   }
   "At the UnsubscribeTables" should "not answer" in {
-    Post("/subscribing/admin", UnsubscribeTables()) ~> addCredentials(validCredentials) ~> routes ~> check {
+    Post("/subscribing/admin", UnsubscribeTables) ~> addCredentials(validCredentials) ~> routes ~> check {
       response.status shouldBe StatusCodes.NoContent
     }
 
-    Post("/subscribing/admin", GetSubscribeTables()) ~> addCredentials(validCredentials) ~> routes ~> check {
+    Post("/subscribing/admin", GetSubscribeTables) ~> addCredentials(validCredentials) ~> routes ~> check {
       responseAs[SubscribesTablesList].tables shouldBe empty
     }
   }
 
   "At the SubscribeTables request with wrong credentials" should "not answer UserNotAuthorized" in {
-    Post("/subscribing/admin", GetSubscribeTables()) ~> routes ~> check {
+    Post("/subscribing/admin", GetSubscribeTables) ~> routes ~> check {
       responseAs[UserNotAuthorized.type] shouldBe UserNotAuthorized
     }
-    Post("/subscribing/admin", GetSubscribeTables()) ~> addCredentials(wrongCredentials_1) ~> routes ~> check {
+    Post("/subscribing/admin", GetSubscribeTables) ~> addCredentials(wrongCredentials_1) ~> routes ~> check {
       responseAs[UserNotAuthorized.type] shouldBe UserNotAuthorized
     }
-    Post("/subscribing/admin", UnsubscribeTables()) ~> addCredentials(wrongCredentials_2) ~> routes ~> check {
+    Post("/subscribing/admin", UnsubscribeTables) ~> addCredentials(wrongCredentials_2) ~> routes ~> check {
       responseAs[UserNotAuthorized.type] shouldBe UserNotAuthorized
     }
   }

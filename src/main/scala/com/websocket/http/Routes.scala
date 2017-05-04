@@ -10,7 +10,7 @@ trait Routes extends PingApi with AuthenticationApi with SubscribingApi with Eve
 
   private val exnHandler = ExceptionHandler {
     case NonFatal(err) =>
-      extractRequest { req =>
+      extractRequest { _ =>
         val msg = Option(err.getMessage)
           .getOrElse(s"${err.getClass.getName} (no error message)")
 

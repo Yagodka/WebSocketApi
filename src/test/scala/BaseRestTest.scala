@@ -4,6 +4,7 @@ import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import com.websocket.http.RestApi
 
+//todo Add tests actors
 trait BaseRestTest extends FlatSpec
   with Matchers
   with ScalatestRouteTest
@@ -14,7 +15,7 @@ trait BaseRestTest extends FlatSpec
   val routes: Route = RestApi().routes
 
   override protected def beforeAll(): Unit = {
-    RestApi().run
     super.beforeAll()
+    RestApi().run
   }
 }
